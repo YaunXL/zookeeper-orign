@@ -76,6 +76,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * This class has the control logic for the Leader.
+ * 角色leader 接收处理zk事务请求
  */
 public class Leader extends LearnerMaster {
 
@@ -87,9 +88,14 @@ public class Leader extends LearnerMaster {
         LOG.info("TCP NoDelay set to: {}", nodelay);
     }
 
+    /**
+     * 提案类
+     */
     public static class Proposal extends SyncedLearnerTracker {
 
+        //集群数据包
         public QuorumPacket packet;
+        //请求对象
         public Request request;
 
         @Override
@@ -116,6 +122,7 @@ public class Leader extends LearnerMaster {
         return ackLoggingFrequency;
     }
 
+    //leader服务节点
     final LeaderZooKeeperServer zk;
 
     final QuorumPeer self;
@@ -126,6 +133,7 @@ public class Leader extends LearnerMaster {
     // the follower acceptor thread
     volatile LearnerCnxAcceptor cnxAcceptor = null;
 
+    //所有的节点
     // list of all the learners, including followers and observers
     private final HashSet<LearnerHandler> learners = new HashSet<LearnerHandler>();
 

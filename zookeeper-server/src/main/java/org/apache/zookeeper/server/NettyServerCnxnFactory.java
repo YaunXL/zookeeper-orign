@@ -95,9 +95,12 @@ public class NettyServerCnxnFactory extends ServerCnxnFactory {
      */
     private static final byte TLS_HANDSHAKE_RECORD_TYPE = 0x16;
 
+    //未完成握手的连接数
     private final AtomicInteger outstandingHandshake = new AtomicInteger();
+    //配置的未完成握手的限制数
     public static final String OUTSTANDING_HANDSHAKE_LIMIT = "zookeeper.netty.server.outstandingHandshake.limit";
     private int outstandingHandshakeLimit;
+    //握手阈值开启
     private boolean handshakeThrottlingEnabled;
 
     public void setOutstandingHandshakeLimit(int limit) {

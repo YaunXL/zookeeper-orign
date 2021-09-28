@@ -67,6 +67,7 @@ public class NettyUtils {
      * {@link EpollEventLoopGroup}, otherwise returns a new
      * {@link NioEventLoopGroup}. Creates the event loop group using the
      * specified number of threads instead of the default.
+     * 创建给定数量的线程池，如果系统支持epoll则使用epoll事件轮询池，否则使用select
      * @param nThreads see {@link NioEventLoopGroup#NioEventLoopGroup(int)}.
      * @return a new {@link EventLoopGroup}.
      */
