@@ -1034,13 +1034,14 @@ public class FastLeaderElection implements Election {
                                 updateProposal(getInitId(), getInitLastLoggedZxid(), getPeerEpoch());
                             }
                             sendNotifications();//发送选举投票信息
-                        } else if (n.electionEpoch < logicalclock.get()) {
+                        } else if (n.electionEpoch < logicalclock.get()) { //如果收到的逻辑时钟小，那么表示这个投票无效
                                 LOG.debug(
                                     "Notification election epoch is smaller than logicalclock. n.electionEpoch = 0x{}, logicalclock=0x{}",
                                     Long.toHexString(n.electionEpoch),
                                     Long.toHexString(logicalclock.get()));
                             break;
                         } else if (totalOrderPredicate(n.leader, n.zxid, n.peerEpoch, proposedLeader, proposedZxid, proposedEpoch)) {
+                            //如果逻辑时钟相等，则去对比zxid,myid,epoch,并更新投票数据，然后发送
                             updateProposal(n.leader, n.zxid, n.peerEpoch);
                             sendNotifications();
                         }

@@ -97,20 +97,26 @@ public class DataTree {
 
     private static final Logger LOG = LoggerFactory.getLogger(DataTree.class);
 
+    //15分钟
     private final RateLogger RATE_LOGGER = new RateLogger(LOG, 15 * 60 * 1000);
 
     /**
      * This map provides a fast lookup to the datanodes. The tree is the
      * source of truth and is where all the locking occurs
+     * 存储节点的map
      */
     private final NodeHashMap nodes;
 
+    //节点监听管理器
     private IWatchManager dataWatches;
 
+    //子节点监听管理器
     private IWatchManager childWatches;
 
+    //所有节点的路径和data所占的缓存大小
     /** cached total size of paths and data for all DataNodes */
     private final AtomicLong nodeDataSize = new AtomicLong(0);
+
 
     /** the root of zookeeper tree */
     private static final String rootZookeeper = "/";
@@ -151,6 +157,7 @@ public class DataTree {
 
     /**
      * This hashtable lists the paths of the ephemeral nodes of a session.
+     * 保存每个session对应的临时节点
      */
     private final Map<Long, HashSet<String>> ephemerals = new ConcurrentHashMap<Long, HashSet<String>>();
 
