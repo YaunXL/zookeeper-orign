@@ -42,6 +42,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * This class starts and runs a standalone ZooKeeperServer.
+ *
+ * 单机版zookeeper启动类
  */
 @InterfaceAudience.Public
 public class ZooKeeperServerMain {
@@ -96,6 +98,13 @@ public class ZooKeeperServerMain {
         ServiceUtils.requestSystemExit(ExitCode.EXECUTION_FINISHED.getValue());
     }
 
+    /**
+     * 初始化启动参数，并启动服务器
+     * @param args
+     * @throws ConfigException
+     * @throws IOException
+     * @throws AdminServerException
+     */
     protected void initializeAndRun(String[] args) throws ConfigException, IOException, AdminServerException {
         try {
             ManagedUtil.registerLog4jMBeans();
@@ -115,6 +124,7 @@ public class ZooKeeperServerMain {
 
     /**
      * Run from a ServerConfig.
+     * 根据配置文件参数启动服务器
      * @param config ServerConfig to use.
      * @throws IOException
      * @throws AdminServerException
@@ -141,11 +151,13 @@ public class ZooKeeperServerMain {
             if (config.jvmPauseMonitorToRun) {
                 jvmPauseMonitor = new JvmPauseMonitor(config);
             }
+            //初始化一个zookeeperServer实例
             final ZooKeeperServer zkServer = new ZooKeeperServer(jvmPauseMonitor, txnLog, config.tickTime, config.minSessionTimeout, config.maxSessionTimeout, config.listenBacklog, null, config.initialConfig);
             txnLog.setServerStats(zkServer.serverStats());
 
             // Registers shutdown handler which will be used to know the
             // server error or shutdown state changes.
+            //给服务器线程注册关闭的闭锁
             final CountDownLatch shutdownLatch = new CountDownLatch(1);
             zkServer.registerServerShutdownHandler(new ZooKeeperServerShutdownHandler(shutdownLatch));
 

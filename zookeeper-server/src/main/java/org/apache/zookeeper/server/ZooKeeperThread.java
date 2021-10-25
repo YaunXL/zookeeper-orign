@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 /**
  * This is the main class for catching all the uncaught exceptions thrown by the
  * threads.
+ * 对线程类的扩展，增强线程处理未捕获异常的方法
  */
 public class ZooKeeperThread extends Thread {
 

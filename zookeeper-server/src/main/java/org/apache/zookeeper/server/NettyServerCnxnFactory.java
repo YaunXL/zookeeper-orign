@@ -201,6 +201,7 @@ public class NettyServerCnxnFactory extends ServerCnxnFactory {
      * This is an inner class since we need to extend ChannelDuplexHandler, but
      * NettyServerCnxnFactory already extends ServerCnxnFactory. By making it inner
      * this class gets access to the member variables and methods.
+     * 使用内部类的方式解决多继承问题，服务端sock channel的handler
      */
     @Sharable
     class CnxnChannelHandler extends ChannelDuplexHandler {
@@ -210,8 +211,9 @@ public class NettyServerCnxnFactory extends ServerCnxnFactory {
             if (LOG.isTraceEnabled()) {
                 LOG.trace("Channel active {}", ctx.channel());
             }
-
+            //获得客户端socket channel
             final Channel channel = ctx.channel();
+            //如果超出服务端最大连接数，关闭channel
             if (limitTotalNumberOfCnxns()) {
                 ServerMetrics.getMetrics().CONNECTION_REJECTED.add(1);
                 channel.close();
@@ -387,6 +389,7 @@ public class NettyServerCnxnFactory extends ServerCnxnFactory {
             super.write(ctx, msg, promise);
         }
 
+
     }
 
     final class CertificateVerifier implements GenericFutureListener<Future<Channel>> {
@@ -503,6 +506,9 @@ public class NettyServerCnxnFactory extends ServerCnxnFactory {
         }
     }
 
+    /**
+     * netty服务端准备工作
+     */
     NettyServerCnxnFactory() {
         x509Util = new ClientX509Util();
 
@@ -524,12 +530,13 @@ public class NettyServerCnxnFactory extends ServerCnxnFactory {
         setOutstandingHandshakeLimit(Integer.getInteger(OUTSTANDING_HANDSHAKE_LIMIT, -1));
 
         EventLoopGroup bossGroup = NettyUtils.newNioOrEpollEventLoopGroup(NettyUtils.getClientReachableLocalInetAddressCount());
+        //工作线程数默认是处理器核心数*2
         EventLoopGroup workerGroup = NettyUtils.newNioOrEpollEventLoopGroup();
         ServerBootstrap bootstrap = new ServerBootstrap().group(bossGroup, workerGroup)
                                                          .channel(NettyUtils.nioOrEpollServerSocketChannel())
                                                          // parent channel options
                                                          .option(ChannelOption.SO_REUSEADDR, true)
-                                                         // child channels options
+                                                         // child channels options 禁用nagle算法，允许小包的发送，降低延迟，适用与传输数据量较小的应用
                                                          .childOption(ChannelOption.TCP_NODELAY, true)
                                                          .childOption(ChannelOption.SO_LINGER, -1)
                                                          .childHandler(new ChannelInitializer<SocketChannel>() {
@@ -693,9 +700,12 @@ public class NettyServerCnxnFactory extends ServerCnxnFactory {
     @Override
     public void start() {
         if (listenBacklog != -1) {
+            //临时存放已完成三次握手的请求队列的最大长度
+            //如果未设置或者设置的值小于1，java默认50
+            //如果大于队列的最大长度，请求会被拒绝
             bootstrap.option(ChannelOption.SO_BACKLOG, listenBacklog);
         }
-        LOG.info("binding to port {}", localAddress);
+        LOG.info("netty shixian ... binding to port {}", localAddress);
         parentChannel = bootstrap.bind(localAddress).syncUninterruptibly().channel();
         // Port changes after bind() if the original port was 0, update
         // localAddress to get the real port.
@@ -730,9 +740,12 @@ public class NettyServerCnxnFactory extends ServerCnxnFactory {
 
     @Override
     public void startup(ZooKeeperServer zks, boolean startServer) throws IOException, InterruptedException {
+        //绑定主机端口，开启一个netty服务端线程
         start();
+        //给zkServer配置服务器工厂类的实现
         setZooKeeperServer(zks);
         if (startServer) {
+            //server初始化数据库，并加载数据
             zks.startdata();
             zks.startup();
         }

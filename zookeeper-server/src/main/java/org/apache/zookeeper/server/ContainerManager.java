@@ -105,6 +105,7 @@ public class ContainerManager {
                 }
             };
             if (task.compareAndSet(null, timerTask)) {
+                //设置下一次任务的计划
                 timer.scheduleAtFixedRate(timerTask, checkIntervalMs, checkIntervalMs);
             }
         }
@@ -133,6 +134,7 @@ public class ContainerManager {
             Request request = new Request(null, 0, 0, ZooDefs.OpCode.deleteContainer, path, null);
             try {
                 LOG.info("Attempting to delete candidate container: {}", containerPath);
+                //提交删除请求
                 postDeleteRequest(request);
             } catch (Exception e) {
                 LOG.error("Could not delete container: {}", containerPath, e);

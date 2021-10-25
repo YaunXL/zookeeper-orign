@@ -20,6 +20,8 @@ package org.apache.zookeeper.server;
 
 import java.util.concurrent.CountDownLatch;
 import org.apache.zookeeper.server.ZooKeeperServer.State;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * ZooKeeper server shutdown handler which will be used to handle ERROR or
@@ -29,6 +31,7 @@ import org.apache.zookeeper.server.ZooKeeperServer.State;
 public final class ZooKeeperServerShutdownHandler {
 
         private final CountDownLatch shutdownLatch;
+    private static final Logger LOG = LoggerFactory.getLogger(ZooKeeperServerShutdownHandler.class);
 
     ZooKeeperServerShutdownHandler(CountDownLatch shutdownLatch) {
         this.shutdownLatch = shutdownLatch;
@@ -36,11 +39,13 @@ public final class ZooKeeperServerShutdownHandler {
 
     /**
      * This will be invoked when the server transition to a new server state.
-     *
+     * 当服务器状态转变的时候会调用此方法，判断是否错误或关闭
      * @param state new server state
      */
     public void handle(State state) {
+        LOG.info("服务器状态变化{}",state);
         if (state == State.ERROR || state == State.SHUTDOWN) {
+            LOG.info("关闭闭锁，优雅的关闭服务器线程");
             shutdownLatch.countDown();
         }
     }
