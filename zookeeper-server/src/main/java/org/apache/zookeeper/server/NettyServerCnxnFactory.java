@@ -551,6 +551,7 @@ public class NettyServerCnxnFactory extends ServerCnxnFactory {
                                                                  } else if (shouldUsePortUnification) {
                                                                      initSSL(pipeline, true);
                                                                  }
+                                                                 //通道处理器
                                                                  pipeline.addLast("servercnxnfactory", channelHandler);
                                                              }
                                                          });

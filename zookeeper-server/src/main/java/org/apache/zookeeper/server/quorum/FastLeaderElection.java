@@ -107,6 +107,10 @@ public class FastLeaderElection implements Election {
      * a given peer has changed its vote, either because it has
      * joined leader election or because it learned of another
      * peer with higher zxid or same zxid and higher server id
+     *
+     * 通知消息：通知某个主机他的选票被更改，有两个原因
+     * 1：已经选举出了leader;
+     * 2: 存在更大的zxid或者更高的serverid即myid
      */
 
     public static class Notification {
@@ -126,7 +130,7 @@ public class FastLeaderElection implements Election {
          */ long zxid;
 
         /*
-         * Epoch
+         * Epoch 本次选举的epoch
          */ long electionEpoch;
 
         /*
@@ -139,6 +143,7 @@ public class FastLeaderElection implements Election {
 
         QuorumVerifier qv;
         /*
+         * 提议leader的epoch
          * epoch of the proposed leader
          */ long peerEpoch;
 
@@ -209,6 +214,8 @@ public class FastLeaderElection implements Election {
      * implements two sub-classes: WorkReceiver and  WorkSender. The
      * functionality of each is obvious from the name. Each of these
      * spawns a new thread.
+     *
+     * 多线程实现选举消息处理，有两个内部子类，接收和发送，每个类分别产生一个新的线程
      */
 
     protected class Messenger {
@@ -220,6 +227,7 @@ public class FastLeaderElection implements Election {
 
         class WorkerReceiver extends ZooKeeperThread {
 
+            //优雅结束线程标志
             volatile boolean stop;
             QuorumCnxManager manager;
 
@@ -523,6 +531,7 @@ public class FastLeaderElection implements Election {
 
         WorkerSender ws;
         WorkerReceiver wr;
+        //todo 为什么要重新声明2个线程对象，ws,wr不就是线程对象吗？
         Thread wsThread = null;
         Thread wrThread = null;
 
@@ -536,6 +545,7 @@ public class FastLeaderElection implements Election {
             this.ws = new WorkerSender(manager);
 
             this.wsThread = new Thread(this.ws, "WorkerSender[myid=" + self.getId() + "]");
+            //设为守护线程，系统结束线程终止，与主线程同生共死
             this.wsThread.setDaemon(true);
 
             this.wr = new WorkerReceiver(manager);
@@ -563,6 +573,7 @@ public class FastLeaderElection implements Election {
     }
 
     QuorumPeer self;
+    //消息管理器
     Messenger messenger;
     AtomicLong logicalclock = new AtomicLong(); /* Election instance */
     long proposedLeader;
@@ -637,17 +648,21 @@ public class FastLeaderElection implements Election {
      * any constructor of this class, it is probably best to keep as
      * a separate method. As we have a single constructor currently,
      * it is not strictly necessary to have it separate.
-     *
+     * 被构造方法调用，最合适的作为一个独立的方法，让这个类的每一个构造方法都调用
      * @param self      QuorumPeer that created this object
      * @param manager   Connection manager
      */
     private void starter(QuorumPeer self, QuorumCnxManager manager) {
         this.self = self;
+        //初始化投票leader和事务id
         proposedLeader = -1;
         proposedZxid = -1;
 
+        //发送消息队列
         sendqueue = new LinkedBlockingQueue<ToSend>();
+        //接收消息队列
         recvqueue = new LinkedBlockingQueue<Notification>();
+
         this.messenger = new Messenger(manager);
     }
 
@@ -946,7 +961,7 @@ public class FastLeaderElection implements Election {
             int notTimeout = minNotificationInterval;
 
             synchronized (this) {
-                //原子long类型，增加逻辑始终，就是epoch
+                //原子long类型，增加逻辑时钟，就是epoch
                 logicalclock.incrementAndGet();
                 //更新选举提议，myid,zxid,epoch
                 updateProposal(getInitId(), getInitLastLoggedZxid(), getPeerEpoch());

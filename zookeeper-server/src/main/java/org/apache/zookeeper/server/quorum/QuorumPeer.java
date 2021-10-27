@@ -1133,13 +1133,17 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
         if (!getView().containsKey(myid)) {
             throw new RuntimeException("My id " + myid + " not in the peer list");
         }
+        //加载数据树DataTree
         loadDataBase();
+        //开启服务器，有两种实现 Netty和Nio
         startServerCnxnFactory();
         try {
+            //管理服务器
             adminServer.start();
         } catch (AdminServerException e) {
             LOG.warn("Problem starting AdminServer", e);
         }
+        //启动leader选举
         startLeaderElection();
         startJvmPauseMonitor();
         super.start();
@@ -1147,12 +1151,16 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
 
     private void loadDataBase() {
         try {
+            //从磁盘中加载数据到内存数据树DataTree,并添加committed交易日志到DataTree
             zkDb.loadDataBase();
 
             // load the epochs
+            //获取最近一次的事务id
             long lastProcessedZxid = zkDb.getDataTree().lastProcessedZxid;
+            //根据zxid获取epoch
             long epochOfZxid = ZxidUtils.getEpochFromZxid(lastProcessedZxid);
             try {
+                //读取当前的epoch
                 currentEpoch = readLongFromFile(CURRENT_EPOCH_FILENAME);
             } catch (FileNotFoundException e) {
                 // pick a reasonable epoch number
@@ -1218,7 +1226,9 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
      */
     public synchronized void startLeaderElection() {
         try {
+            //如果服务器的状态为观望，则创建投票
             if (getPeerState() == ServerState.LOOKING) {
+                //投票信息包括，本节点的myid，zxid,epoch
                 currentVote = new Vote(myid, getLastLoggedZxid(), getCurrentEpoch());
             }
         } catch (IOException e) {
@@ -1353,10 +1363,14 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
     }
 
     @SuppressWarnings("deprecation")
+    /**
+     * 选择选举算法，默认是3，执行FastLeaderElection，目前只支持一种算法
+     */
     protected Election createElectionAlgorithm(int electionAlgorithm) {
         Election le = null;
 
         //TODO: use a factory rather than a switch
+        //可以使用工厂模式替换switch
         switch (electionAlgorithm) {
         case 1:
             throw new UnsupportedOperationException("Election Algorithm 1 is not supported.");
@@ -1364,6 +1378,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
             throw new UnsupportedOperationException("Election Algorithm 2 is not supported.");
         case 3:
             QuorumCnxManager qcm = createCnxnManager();
+            //设置为新创建的qcm对象，并返回旧值
             QuorumCnxManager oldQcm = qcmRef.getAndSet(qcm);
             if (oldQcm != null) {
                 LOG.warn("Clobbering already-set QuorumCnxManager (restarting leader election?)");
@@ -1373,6 +1388,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
             if (listener != null) {
                 listener.start();
                 FastLeaderElection fle = new FastLeaderElection(this, qcm);
+                //选举开始
                 fle.start();
                 le = fle;
             } else {
@@ -2598,6 +2614,10 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
         return quorumLearnerSaslAuthRequired;
     }
 
+    /**
+     * 创建一个集群通信消息管理器
+     * @return
+     */
     public QuorumCnxManager createCnxnManager() {
         int timeout = quorumCnxnTimeoutMs > 0 ? quorumCnxnTimeoutMs : this.tickTime * this.syncLimit;
         LOG.info("Using {}ms as the quorum cnxn socket timeout", timeout);

@@ -57,6 +57,7 @@ import org.slf4j.LoggerFactory;
  * that connection is closed and flagged as invalid. All subsequent requests
  * inflight from that connection are then dropped as well.
  */
+//请求限流线程，继承zk关键线程
 public class RequestThrottler extends ZooKeeperCriticalThread {
 
     private static final Logger LOG = LoggerFactory.getLogger(RequestThrottler.class);

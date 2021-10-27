@@ -38,7 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * zk服务端网络连接工厂
+ * zk服务端网络连接工，抽象工厂模式
  */
 public abstract class ServerCnxnFactory {
 

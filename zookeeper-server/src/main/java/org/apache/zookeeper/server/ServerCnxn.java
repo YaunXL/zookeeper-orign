@@ -52,7 +52,8 @@ import org.slf4j.LoggerFactory;
 /**
  * Interface to a Server connection - represents a connection from a client
  * to the server.
- * 表示一个连接
+ * 表示一个连接,由ServerCnxnFactory生产,具体子类工厂生成不同的连接子类
+ * 包含一些session,channel,buffer等信息
  */
 public abstract class ServerCnxn implements Stats, Watcher {
 

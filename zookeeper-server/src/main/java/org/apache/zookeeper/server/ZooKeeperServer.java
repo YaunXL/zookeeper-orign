@@ -333,6 +333,7 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
     /**
      *  * Creates a ZooKeeperServer instance. It sets everything up, but doesn't
      * actually start listening for clients until run() is invoked.
+     * 初始化设置所有的东西，但是不真正的开启接收客户端知道run方法调用
      *
      */
     public ZooKeeperServer(FileTxnSnapLog txnLogFactory, int tickTime, int minSessionTimeout, int maxSessionTimeout, int clientPortListenBacklog, ZKDatabase zkDb, String initialConfig, boolean reconfigEnabled) {
@@ -706,6 +707,7 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
 
     public synchronized void startServing() {
         setState(State.RUNNING);
+        //唤醒类锁上等待线程池中的所有线程，执行其它的synchronized方法
         notifyAll();
     }
 
@@ -1229,6 +1231,7 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
     /**
      * return the last processed id from the
      * datatree
+     * 获取数据库最大的已处理的事务id
      */
     public long getLastProcessedZxid() {
         return zkDb.getDataTreeLastProcessedZxid();
@@ -1238,6 +1241,7 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
      * return the outstanding requests
      * in the queue, which haven't been
      * processed yet
+     * 返回请求队列中未处理的请求个数
      */
     public long getOutstandingRequests() {
         return getInProcess();
@@ -1246,6 +1250,7 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
     /**
      * return the total number of client connections that are alive
      * to this server
+     * 获取服务器激活客户端的连接数
      */
     public int getNumAliveConnections() {
         int numAliveConnections = 0;
@@ -1264,6 +1269,7 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
     /**
      * truncate the log to get in sync with others
      * if in a quorum
+     * 集群模式下，保持日志同步
      * @param zxid the zxid that it needs to get in sync
      * with others
      * @throws IOException

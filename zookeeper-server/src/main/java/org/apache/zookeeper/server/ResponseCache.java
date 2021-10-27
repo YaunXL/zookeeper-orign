@@ -26,6 +26,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("serial")
+/**
+ * 响应缓存类，缓存响应结果，默认大小是400，使用了lru算法
+ */
 public class ResponseCache {
     private static final Logger LOG = LoggerFactory.getLogger(ResponseCache.class);
 

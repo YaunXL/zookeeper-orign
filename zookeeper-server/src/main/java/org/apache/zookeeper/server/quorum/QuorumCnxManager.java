@@ -77,15 +77,18 @@ import org.slf4j.LoggerFactory;
 
 
 /**
+ * 管理leader选举的通信连接，使用了socket,为每一对服务器维持了一个连接
  * This class implements a connection manager for leader election using TCP. It
- * maintains one connection for every pair of servers. The tricky part is to
+ * maintains one connection for every pair of servers.
+ * 最难办的部分是，准确的保证每对服务器只存在一个连接，能够通过网络正确操作和通信
+ * The tricky part is to
  * guarantee that there is exactly one connection for every pair of servers that
  * are operating correctly and that can communicate over the network.
- *
+ * 假如两个服务器试着并发的开启一个连接，连接管理器会用一个简单的打破僵局的方式决定放弃哪个连接，基于双方的ip地址
  * If two servers try to start a connection concurrently, then the connection
  * manager uses a very simple tie-breaking mechanism to decide which connection
  * to drop based on the IP addressed of the two parties.
- *
+ * 连接管理器维护这一个发送消息队列
  * For every peer, the manager maintains a queue of messages to send. If the
  * connection to any particular peer drops, then the sender thread puts the
  * message back on the list. As this implementation currently uses a queue
@@ -106,12 +109,15 @@ public class QuorumCnxManager {
     static final int RECV_CAPACITY = 100;
     // Initialized to 1 to prevent sending
     // stale notifications to peers
+    //发送容量初始化为1，阻止发送失效的通知给其它的主机
     static final int SEND_CAPACITY = 1;
 
+    //数据包最大值512kb
     static final int PACKETMAXSIZE = 1024 * 512;
 
     /*
      * Negative counter for observer server ids.
+     * observer节点的负计数器
      */
 
     private AtomicLong observerCounter = new AtomicLong(-1);
