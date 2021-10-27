@@ -74,6 +74,7 @@ import org.apache.zookeeper.util.CircularBlockingQueue;
 import org.apache.zookeeper.util.ServiceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.rmi.runtime.Log;
 
 
 /**
@@ -132,6 +133,7 @@ public class QuorumCnxManager {
 
     /*
      * Max buffer size to be read from the network.
+     * 最大buf 2kb
      */
     public static final int maxBuffer = 2048;
 
@@ -219,6 +221,8 @@ public class QuorumCnxManager {
     /*
      * This class parses the initial identification sent out by peers with their
      * sid & hostname.
+     * 解析初始化身份识别message
+     * 服务器id以及本机ip,端口
      */
     public static class InitialMessage {
 
@@ -239,6 +243,14 @@ public class QuorumCnxManager {
 
         }
 
+        /**
+         * 从接收数据流里面解析出主机和端口信息
+         * @param protocolVersion
+         * @param din
+         * @return
+         * @throws InitialMessageException
+         * @throws IOException
+         */
         public static InitialMessage parse(Long protocolVersion, DataInputStream din) throws InitialMessageException, IOException {
             Long sid;
 
@@ -262,7 +274,9 @@ public class QuorumCnxManager {
 
             // in PROTOCOL_VERSION_V1 we expect to get a single address here represented as a 'host:port' string
             // in PROTOCOL_VERSION_V2 we expect to get multiple addresses like: 'host1:port1|host2:port2|...'
+
             String[] addressStrings = new String(b, UTF_8).split("\\|");
+            LOG.info("yxl...通信连接初始化消息{},{}",new String(b,UTF_8),System.currentTimeMillis());
             List<InetSocketAddress> addresses = new ArrayList<>(addressStrings.length);
             for (String addr : addressStrings) {
 
@@ -289,7 +303,7 @@ public class QuorumCnxManager {
                     addresses.add(new InetSocketAddress(host_port[0], port));
                 }
             }
-
+            LOG.info("yxl...{},addresses: {}",sid,addresses.size());
             return new InitialMessage(sid, addresses);
         }
 
