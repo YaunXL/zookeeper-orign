@@ -66,6 +66,7 @@ import org.slf4j.LoggerFactory;
  * server states that includes the sessions, datatree and the
  * committed logs. It is booted up  after reading the logs
  * and snapshots from the disk.
+ * zkserver状态内存数据库，包括所有的会话，数据树，提交日志。在从磁盘读取日志和快照后，启动
  */
 public class ZKDatabase {
 
@@ -77,6 +78,7 @@ public class ZKDatabase {
      */
     protected DataTree dataTree;
     protected ConcurrentHashMap<Long, Integer> sessionsWithTimeouts;
+    //事务日志文件
     protected FileTxnSnapLog snapLog;
     protected long minCommittedLog, maxCommittedLog;
 
@@ -88,6 +90,7 @@ public class ZKDatabase {
     private double snapshotSizeFactor;
 
     public static final String COMMIT_LOG_COUNT = "zookeeper.commitLogCount";
+    //默认提交日志最大计数
     public static final int DEFAULT_COMMIT_LOG_COUNT = 500;
     public int commitLogCount;
     protected Queue<Proposal> committedLog = new ArrayDeque<>();
@@ -106,7 +109,9 @@ public class ZKDatabase {
      * @param snapLog the FileTxnSnapLog mapping this zkdatabase
      */
     public ZKDatabase(FileTxnSnapLog snapLog) {
+        //创建datatree对象
         dataTree = createDataTree();
+        //session与过期时间
         sessionsWithTimeouts = new ConcurrentHashMap<Long, Integer>();
         this.snapLog = snapLog;
 
@@ -155,6 +160,7 @@ public class ZKDatabase {
     /**
      * checks to see if the zk database has been
      * initialized or not.
+     * 检查数据库是否已经创建
      * @return true if zk database is initialized and false if not
      */
     public boolean isInitialized() {
@@ -172,11 +178,13 @@ public class ZKDatabase {
         maxCommittedLog = 0;
         /* to be safe we just create a new
          * datatree.
+         * 重新创建一个新的空的datatree
          */
         dataTree.shutdownWatcher();
         dataTree = createDataTree();
         sessionsWithTimeouts.clear();
         WriteLock lock = logLock.writeLock();
+        //获取写锁，清空已提交日志队列
         try {
             lock.lock();
             committedLog.clear();

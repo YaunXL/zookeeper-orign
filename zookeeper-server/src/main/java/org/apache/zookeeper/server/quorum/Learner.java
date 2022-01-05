@@ -542,13 +542,17 @@ public class Learner {
     /**
      * Finally, synchronize our history with the Leader (if Follower)
      * or the LearnerMaster (if Observer).
+     * follower或observer同步leader历史数据
      * @param newLeaderZxid
      * @throws IOException
      * @throws InterruptedException
      */
     protected void syncWithLeader(long newLeaderZxid) throws Exception {
+        //leader ack包
         QuorumPacket ack = new QuorumPacket(Leader.ACK, 0, null, null);
+        //同步请求包
         QuorumPacket qp = new QuorumPacket();
+        //从leader最近的事务id获取epoch
         long newEpoch = ZxidUtils.getEpochFromZxid(newLeaderZxid);
 
         QuorumVerifier newLeaderQV = null;
@@ -557,12 +561,14 @@ public class Learner {
         // For SNAP and TRUNC the snapshot is needed to save that history
         boolean snapshotNeeded = true;
         boolean syncSnapshot = false;
+        //从leader读取一个请求包
         readPacket(qp);
         Deque<Long> packetsCommitted = new ArrayDeque<>();
         Deque<PacketInFlight> packetsNotCommitted = new ArrayDeque<>();
         synchronized (zk) {
             if (qp.getType() == Leader.DIFF) {
                 LOG.info("Getting a diff from the leader 0x{}", Long.toHexString(qp.getZxid()));
+                //日志同步方式
                 self.setSyncMode(QuorumPeer.SyncMode.DIFF);
                 if (zk.shouldForceWriteInitialSnapshotAfterLeaderElection()) {
                     LOG.info("Forcing a snapshot write as part of upgrading from an older Zookeeper. This should only happen while upgrading.");
@@ -572,6 +578,7 @@ public class Learner {
                     snapshotNeeded = false;
                 }
             } else if (qp.getType() == Leader.SNAP) {
+                //快照同步方式
                 self.setSyncMode(QuorumPeer.SyncMode.SNAP);
                 LOG.info("Getting a snapshot from leader 0x{}", Long.toHexString(qp.getZxid()));
                 // The leader is going to dump the database
@@ -718,6 +725,7 @@ public class Learner {
 
                     break;
                 case Leader.UPTODATE:
+                    //leader通知follower，可以响应客户端的请求
                     LOG.info("Learner received UPTODATE message");
                     if (newLeaderQV != null) {
                         boolean majorChange = self.processReconfig(newLeaderQV, null, null, true);

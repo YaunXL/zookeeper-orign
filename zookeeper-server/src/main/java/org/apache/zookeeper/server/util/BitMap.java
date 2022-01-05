@@ -33,6 +33,7 @@ public class BitMap<T> {
     private final Map<T, Integer> value2Bit = new HashMap<T, Integer>();
     private final Map<Integer, T> bit2Value = new HashMap<Integer, T>();
 
+    //已经释放的bit位置
     private final BitSet freedBitSet = new BitSet();
     private Integer nextBit = Integer.valueOf(0);
 

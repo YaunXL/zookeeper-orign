@@ -165,8 +165,11 @@ public class QuorumCnxManager {
     /*
      * Mapping from Peer to Thread number
      */
+    //主机与发送线程的映射
     final ConcurrentHashMap<Long, SendWorker> senderWorkerMap;
+    //主机与发送缓存队列的映射
     final ConcurrentHashMap<Long, BlockingQueue<ByteBuffer>> queueSendMap;
+    //主机与发送缓存buffer的映射
     final ConcurrentHashMap<Long, ByteBuffer> lastMessageSent;
 
     /*
@@ -709,18 +712,23 @@ public class QuorumCnxManager {
     public void toSend(Long sid, ByteBuffer b) {
         /*
          * If sending message to myself, then simply enqueue it (loopback).
+         * 如果消息是发给自己的，则仅简单的放入接收队列即可，不用真的发送出去
          */
         if (this.mySid == sid) {
             b.position(0);
             addToRecvQueue(new Message(b.duplicate(), sid));
             /*
              * Otherwise send to the corresponding thread to send.
+             * 否则正常发送给线程处理
              */
         } else {
             /*
              * Start a new connection if doesn't have one already.
+             * 开启一个新的连接
              */
+            //找到要发送服务器的sid对应的缓存buffer队列，将要发送的buffer加入到队列
             BlockingQueue<ByteBuffer> bq = queueSendMap.computeIfAbsent(sid, serverId -> new CircularBlockingQueue<>(SEND_CAPACITY));
+            //增加到发送队列，创建连接
             addToSendQueue(bq, b);
             connectOne(sid);
         }
@@ -756,10 +764,11 @@ public class QuorumCnxManager {
     /**
      * Try to establish a connection to server with id sid.
      * The function will return quickly and the connection will be established asynchronously.
-     *
+     * 尝试建立到sid的连接
      *  @param sid  server id
      */
     synchronized void connectOne(long sid) {
+        //与该主机的连接已经建立
         if (senderWorkerMap.get(sid) != null) {
             LOG.debug("There is a connection already for server {}", sid);
             if (self.isMultiAddressEnabled() && self.isMultiAddressReachabilityCheckEnabled()) {

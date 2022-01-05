@@ -45,6 +45,7 @@ public class LeaderElectionSupportTest extends ClientBase {
 
     private ZooKeeper zooKeeper;
 
+    //测试开始创建zkclient、根路径
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
@@ -67,6 +68,7 @@ public class LeaderElectionSupportTest extends ClientBase {
         super.tearDown();
     }
 
+    //测试一个节点
     @Test
     public void testNode() throws Exception {
         LeaderElectionSupport electionSupport = createLeaderElectionSupport();
@@ -76,6 +78,7 @@ public class LeaderElectionSupportTest extends ClientBase {
         electionSupport.stop();
     }
 
+    //3个节点选主
     @Test
     public void testNodes3() throws Exception {
         int testIterations = 3;

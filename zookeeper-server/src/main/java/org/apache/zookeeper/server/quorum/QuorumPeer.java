@@ -660,6 +660,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
 
     /**
      * This is who I think the leader currently is.
+     * 自己认为的当前的leader
      */
     private volatile Vote currentVote;
 
@@ -837,16 +838,19 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
                     if (packet.getLength() != 4) {
                         LOG.warn("Got more than just an xid! Len = {}", packet.getLength());
                     } else {
+                        //buf的position归0,开始读取数据
                         responseBuffer.clear();
                         responseBuffer.getInt(); // Skip the xid
                         responseBuffer.putLong(myid);
                         Vote current = getCurrentVote();
                         switch (getPeerState()) {
                         case LOOKING:
+                            //观望阶段，获取要投票的id、事务id
                             responseBuffer.putLong(current.getId());
                             responseBuffer.putLong(current.getZxid());
                             break;
                         case LEADING:
+                            //领导
                             responseBuffer.putLong(myid);
                             try {
                                 long proposed;
@@ -860,6 +864,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
                             }
                             break;
                         case FOLLOWING:
+                            //跟随者
                             responseBuffer.putLong(current.getId());
                             try {
                                 responseBuffer.putLong(follower.getZxid());

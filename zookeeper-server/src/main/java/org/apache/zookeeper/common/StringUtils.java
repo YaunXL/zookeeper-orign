@@ -30,7 +30,7 @@ public class StringUtils {
      * This method returns an immutable List&lt;String&gt;, but different from String's split()
      * it trims the results in the input String, and removes any empty string from
      * the resulting List.
-     *
+     * string转list，使用分隔符分割
      */
     public static List<String> split(String value, String separator) {
         String[] splits = value.split(separator);
@@ -59,6 +59,7 @@ public class StringUtils {
      * @return a new String that is composed from the elements argument or
      *         {@code null} if list is {@code null}
      * @throws NullPointerException if delim is {@code null}
+     * list转字符串，使用连接符
      */
     public static String joinStrings(List<String> list, String delim) {
         Objects.requireNonNull(delim);
@@ -67,6 +68,7 @@ public class StringUtils {
 
     /**
      * Returns true if the string is null or it does not contain any non space characters.
+     * 判断字符串是否为空或者不包含任何非空格字符串
      * @param s the string
      * @return true if the string is null or it does not contain any non space characters.
      */
@@ -76,7 +78,7 @@ public class StringUtils {
 
     /**
      * <p>Checks if a String is empty ("") or null.</p>
-     *
+     * 验证字符串是否为null或者空字符
      * <pre>
      * StringUtils.isEmpty(null)      = true
      * StringUtils.isEmpty("")        = true

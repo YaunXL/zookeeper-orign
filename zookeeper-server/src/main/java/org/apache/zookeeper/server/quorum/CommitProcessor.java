@@ -110,6 +110,7 @@ public class CommitProcessor extends ZooKeeperCriticalThread implements RequestP
 
     /**
      * Requests that have been committed.
+     * 已提交过的请求队列
      */
     protected final LinkedBlockingQueue<Request> committedRequests = new LinkedBlockingQueue<Request>();
 

@@ -58,6 +58,9 @@ public class BitMapTest extends ZKTestCase {
         assertEquals(0, bitMap.size());
         assertNull(bitMap.get(v2Bit));
         assertNull(bitMap.getBit(v2));
+
+        String v3 = "v3";
+        Integer v3Bit = bitMap.add(v3);
     }
 
     @Test

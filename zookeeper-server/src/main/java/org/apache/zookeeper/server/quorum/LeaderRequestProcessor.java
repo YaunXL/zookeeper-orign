@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Responsible for performing local session upgrade. Only request submitted
  * directly to the leader should go through this processor.
+ * 负责执行本地会话升级。只有直接提交给leader的请求才能通过这个处理器。
  */
 public class LeaderRequestProcessor implements RequestProcessor {
 
@@ -53,6 +54,7 @@ public class LeaderRequestProcessor implements RequestProcessor {
 
         // Check if this is a local session and we are trying to create
         // an ephemeral node, in which case we upgrade the session
+        //检查是否为本地会话，并尝试创建一个临时会话，在这个过程中，我们有可能升级会话
         Request upgradeRequest = null;
         try {
             upgradeRequest = lzks.checkUpgradeSession(request);

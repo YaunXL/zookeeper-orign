@@ -37,6 +37,7 @@ import java.util.Set;
  * data over and may have some herd effect of keep copying data from one
  * data structure to anther. The current solution can do a very good job
  * given most of the paths have limited number of elements.
+ * 包装了bitset
  */
 public class BitHashSet implements Iterable<Integer> {
 
@@ -44,6 +45,7 @@ public class BitHashSet implements Iterable<Integer> {
      * Change to SparseBitSet if we we want to optimize more, the number of
      * elements on a single server is usually limited, so BitSet should be
      * fine.
+     * 定一个bitset变量，然后包装返回bitHashSet
      */
     private final BitSet elementBits = new BitSet();
 
@@ -52,6 +54,7 @@ public class BitHashSet implements Iterable<Integer> {
      * element in this BitHashSet, but the bit is very large, without
      * HashSet we need to go through all the words before return that
      * element, which is not efficient.
+     * 当bit很大时，我们要只找某个元素需要遍历，效率不高，这里使用了hashset缓存结构
      */
     private final Set<Integer> cache = new HashSet<Integer>();
 

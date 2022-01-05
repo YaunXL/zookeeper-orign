@@ -1139,6 +1139,10 @@ public class ClientCnxn {
             return paths;
         }
 
+        /**
+         * 发送ping心跳信息
+         * 请求头header是ping,auth或者为空，那么在发送完之后不会假如Pendingqueue,即不需要在收到响应时进行处理
+         */
         private void sendPing() {
             lastPingSentNs = System.nanoTime();
             RequestHeader h = new RequestHeader(ClientCnxn.PING_XID, OpCode.ping);
@@ -1360,6 +1364,10 @@ public class ClientCnxn {
             clientCnxnSocket.updateLastSendAndHeard();
         }
 
+        /**
+         * client连接了只读server时会尝试连接hostprovider里的读写server
+         * @throws RWServerFoundException
+         */
         private void pingRwServer() throws RWServerFoundException {
             String result = null;
             InetSocketAddress addr = hostProvider.next(0);

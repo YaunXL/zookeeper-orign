@@ -90,6 +90,7 @@ import org.slf4j.LoggerFactory;
  * state of the system. It counts on ZooKeeperServer to update
  * outstandingRequests, so that it can take into account transactions that are
  * in the queue to be applied when generating a transaction.
+ * 首先添加到内部的提交请求队列，然后启动线程预处理请求
  */
 public class PrepRequestProcessor extends ZooKeeperCriticalThread implements RequestProcessor {
 
@@ -311,7 +312,8 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements Req
     /**
      * This method will be called inside the ProcessRequestThread, which is a
      * singleton, so there will be a single thread calling this code.
-     *
+     * 预处理请求为事务
+     * 将请求包装成事件变更记录zookeeperServer,并保存到zookeeper的请求记录变更记录集outstandingChanges中
      * @param type
      * @param zxid
      * @param request
@@ -766,7 +768,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements Req
     /**
      * This method will be called inside the ProcessRequestThread, which is a
      * singleton, so there will be a single thread calling this code.
-     *
+     * 单例调用，因为只有一个线程
      * @param request
      */
     protected void pRequest(Request request) throws RequestProcessorException {
@@ -797,23 +799,28 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements Req
             case OpCode.createContainer:
             case OpCode.create:
             case OpCode.create2:
+                //创建请求
                 CreateRequest create2Request = new CreateRequest();
                 pRequest2Txn(request.type, zks.getNextZxid(), request, create2Request, true);
                 break;
             case OpCode.createTTL:
+                //创建ttl请求
                 CreateTTLRequest createTtlRequest = new CreateTTLRequest();
                 pRequest2Txn(request.type, zks.getNextZxid(), request, createTtlRequest, true);
                 break;
             case OpCode.deleteContainer:
             case OpCode.delete:
+                //删除请求
                 DeleteRequest deleteRequest = new DeleteRequest();
                 pRequest2Txn(request.type, zks.getNextZxid(), request, deleteRequest, true);
                 break;
             case OpCode.setData:
+                //设置数据
                 SetDataRequest setDataRequest = new SetDataRequest();
                 pRequest2Txn(request.type, zks.getNextZxid(), request, setDataRequest, true);
                 break;
             case OpCode.reconfig:
+                //重新配置
                 ReconfigRequest reconfigRequest = new ReconfigRequest();
                 ByteBufferInputStream.byteBuffer2Record(request.request, reconfigRequest);
                 pRequest2Txn(request.type, zks.getNextZxid(), request, reconfigRequest, true);
@@ -827,6 +834,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements Req
                 pRequest2Txn(request.type, zks.getNextZxid(), request, checkRequest, true);
                 break;
             case OpCode.multi:
+                //提交事务
                 MultiOperationRecord multiRequest = new MultiOperationRecord();
                 try {
                     ByteBufferInputStream.byteBuffer2Record(request.request, multiRequest);
@@ -925,6 +933,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements Req
             case OpCode.multiRead:
             case OpCode.addWatch:
             case OpCode.whoAmI:
+                //这些不需要创建事务，仅仅需要校验会话
                 zks.sessionTracker.checkSession(request.sessionId, request.getOwner());
                 break;
             default:

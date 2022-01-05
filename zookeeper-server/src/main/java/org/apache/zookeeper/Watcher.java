@@ -33,12 +33,14 @@ public interface Watcher {
 
     /**
      * This interface defines the possible states an Event may represent
+     * 定义可能的监听事件类型
      */
     @InterfaceAudience.Public
     interface Event {
 
         /**
          * Enumeration of states the ZooKeeper may be at the event
+         * zk状态keepstate 未知、断开连接、未同步连接、认证失败、只读连接、失效、关闭
          */
         @InterfaceAudience.Public
         enum KeeperState {
@@ -134,6 +136,8 @@ public interface Watcher {
 
         /**
          * Enumeration of types of events that may occur on the ZooKeeper
+         *
+         * zk事件类型，空、节点创建、删除、数据变化、子节点变化、数据watch移除、子节点watch移除、持久watch移除
          */
         @InterfaceAudience.Public
         enum EventType {
@@ -186,6 +190,7 @@ public interface Watcher {
 
     /**
      * Enumeration of types of watchers
+     * watcher的类型，子节点、自身节点、两者any
      */
     @InterfaceAudience.Public
     enum WatcherType {

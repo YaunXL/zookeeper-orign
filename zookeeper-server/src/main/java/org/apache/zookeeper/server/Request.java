@@ -41,6 +41,7 @@ import org.apache.zookeeper.txn.TxnHeader;
  */
 public class Request {
 
+    //结束请求标志
     public static final Request requestOfDeath = new Request(null, 0, 0, 0, null, null);
 
     // Considers a request stale if the request's connection has closed. Enabled
@@ -234,7 +235,7 @@ public class Request {
 
     /**
      * is the packet type a valid packet in zookeeper
-     *
+     * 验证数据包是否是正确的请求类型
      * @param type
      *                the type of the packet
      * @return true if a valid packet, false if not

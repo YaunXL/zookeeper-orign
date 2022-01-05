@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * A <a href="package.html">protocol to implement a distributed queue</a>.
+ * 使用zk实现一个分布式队列
  */
 public class DistributedQueue {
 
@@ -59,6 +60,7 @@ public class DistributedQueue {
 
     /**
      * Returns a Map of the children, ordered by id.
+     * 返回所有孩子节点，按编号排序
      * @param watcher optional watcher on getChildren() operation.
      * @return map from id to child name for all children
      */
@@ -66,6 +68,7 @@ public class DistributedQueue {
         Map<Long, String> orderedChildren = new TreeMap<>();
 
         List<String> childNames;
+        //获取所有孩子节点，并设置监听
         childNames = zookeeper.getChildren(dir, watcher);
 
         for (String childName : childNames) {
@@ -88,6 +91,7 @@ public class DistributedQueue {
 
     /**
      * Find the smallest child node.
+     * 找到最小的孩子节点
      * @return The name of the smallest child node.
      */
     private String smallestChildName() throws KeeperException, InterruptedException {
@@ -102,7 +106,7 @@ public class DistributedQueue {
             LOG.warn("Unexpected exception", e);
             return null;
         }
-
+        //遍历所有节点，找到节点序号ID最小的
         for (String childName : childNames) {
             try {
                 //Check format
@@ -130,6 +134,7 @@ public class DistributedQueue {
 
     /**
      * Return the head of the queue without modifying the queue.
+     * 获取队列头部节点的数据data
      * @return the data at the head of the queue.
      * @throws NoSuchElementException
      * @throws KeeperException
@@ -152,7 +157,6 @@ public class DistributedQueue {
             if (orderedChildren.size() == 0) {
                 throw new NoSuchElementException();
             }
-
             for (String headNode : orderedChildren.values()) {
                 if (headNode != null) {
                     try {
@@ -168,6 +172,7 @@ public class DistributedQueue {
 
     /**
      * Attempts to remove the head of the queue and return it.
+     * 尝试删除队列头部元素
      * @return The former head of the queue
      * @throws NoSuchElementException
      * @throws KeeperException
@@ -200,6 +205,9 @@ public class DistributedQueue {
         }
     }
 
+    /**
+     * 闭锁监听器,装饰器模式功能增强
+     */
     private static class LatchChildWatcher implements Watcher {
 
         CountDownLatch latch;
@@ -220,6 +228,7 @@ public class DistributedQueue {
 
     /**
      * Removes the head of the queue and returns it, blocks until it succeeds.
+     * 出队（删除并返回队首元素），阻塞直到成功
      * @return The former head of the queue
      * @throws NoSuchElementException
      * @throws KeeperException
@@ -236,11 +245,12 @@ public class DistributedQueue {
                 zookeeper.create(dir, new byte[0], acl, CreateMode.PERSISTENT);
                 continue;
             }
+            //队列为空，阻塞等待
             if (orderedChildren.size() == 0) {
                 childWatcher.await();
                 continue;
             }
-
+            //获取队首元素数据，并删除节点（触发监听器process方法，闭锁放开）
             for (String headNode : orderedChildren.values()) {
                 String path = dir + "/" + headNode;
                 try {
@@ -256,6 +266,7 @@ public class DistributedQueue {
 
     /**
      * Inserts data into queue.
+     * 写数据到队列，直到数据写入成功
      * @param data
      * @return true if data was successfully added
      */
@@ -273,6 +284,7 @@ public class DistributedQueue {
 
     /**
      * Returns the data at the first element of the queue, or null if the queue is empty.
+     * 获取队首元素数据
      * @return data at the first element of the queue, or null.
      * @throws KeeperException
      * @throws InterruptedException

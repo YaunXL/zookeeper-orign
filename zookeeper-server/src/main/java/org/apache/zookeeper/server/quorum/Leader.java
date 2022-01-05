@@ -337,16 +337,19 @@ public class Leader extends LearnerMaster {
 
     /**
      * This message is for follower to expect diff
+     * follower预期的差异
      */
     static final int DIFF = 13;
 
     /**
      * This is for follower to truncate its logs
+     * follower截断日志
      */
     static final int TRUNC = 14;
 
     /**
      * This is for follower to download the snapshots
+     * 下载快照数据
      */
     static final int SNAP = 15;
 

@@ -24,13 +24,20 @@ import org.apache.zookeeper.ZooKeeper;
 
 /**
  * base class for all CLI commands
+ * 命令行基类
  */
 public abstract class CliCommand {
-
+    /**
+     * zk客户端
+     */
     protected ZooKeeper zk;
+    //控制台输出
     protected PrintStream out;
+    //控制台错误信息
     protected PrintStream err;
+    //命令字符串
     private String cmdStr;
+    //操作参数
     private String optionStr;
 
     /**
@@ -93,6 +100,7 @@ public abstract class CliCommand {
 
     /**
      * add this command to a map. Use the command string as key.
+     * 把command放入一个map中
      * @param cmdMap
      */
     public void addToMap(Map<String, CliCommand> cmdMap) {
@@ -101,6 +109,7 @@ public abstract class CliCommand {
 
     /**
      * parse the command arguments
+     * 解析命令参数
      * @param cmdArgs
      * @return this CliCommand
      * @throws CliParseException
@@ -110,6 +119,7 @@ public abstract class CliCommand {
     /**
      *
      * @return true if command has watch option, false otherwise
+     * 执行命令方法
      * @throws CliException
      */
     public abstract boolean exec() throws CliException;

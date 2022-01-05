@@ -43,8 +43,10 @@ public class WatchManager implements IWatchManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(WatchManager.class);
 
+    //path-watcher键值对，查找某个path的watcher集合
     private final Map<String, Set<Watcher>> watchTable = new HashMap<>();
 
+    //watcher-path 键值对，查找某个watcher的path集合
     private final Map<Watcher, Set<String>> watch2Paths = new HashMap<>();
 
     private final WatcherModeManager watcherModeManager = new WatcherModeManager();
@@ -52,12 +54,14 @@ public class WatchManager implements IWatchManager {
     @Override
     public synchronized int size() {
         int result = 0;
+        //遍历path-watcher的键值对，把所有的watcher个数加起来
         for (Set<Watcher> watches : watchTable.values()) {
             result += watches.size();
         }
         return result;
     }
 
+    //根据连接是否存活，判断watcher是否已经dead
     private boolean isDeadWatcher(Watcher watcher) {
         return watcher instanceof ServerCnxn && ((ServerCnxn) watcher).isStale();
     }
@@ -74,6 +78,7 @@ public class WatchManager implements IWatchManager {
             return false;
         }
 
+        //往set里面添加数据
         Set<Watcher> list = watchTable.get(path);
         if (list == null) {
             // don't waste memory if there are few watches on a node
@@ -90,7 +95,7 @@ public class WatchManager implements IWatchManager {
             paths = new HashSet<>();
             watch2Paths.put(watcher, paths);
         }
-
+        //设置watcherMode
         watcherModeManager.setWatcherMode(watcher, path, watcherMode);
 
         return paths.add(path);
@@ -119,10 +124,13 @@ public class WatchManager implements IWatchManager {
         return triggerWatch(path, type, null);
     }
 
+    //根据事件类型和路径触发watcher，suppress是指定的应该被过滤的watcher集合
     @Override
     public WatcherOrBitSet triggerWatch(String path, EventType type, WatcherOrBitSet supress) {
+        //创建watcher事件
         WatchedEvent e = new WatchedEvent(type, KeeperState.SyncConnected, path);
         Set<Watcher> watchers = new HashSet<>();
+        //path路径遍历器
         PathParentIterator pathParentIterator = getPathParentIterator(path);
         synchronized (this) {
             for (String localPath : pathParentIterator.asIterable()) {

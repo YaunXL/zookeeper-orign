@@ -247,7 +247,7 @@ public class FastLeaderElection implements Election {
                         if (response == null) {
                             continue;
                         }
-
+                        //获取消息的长度
                         final int capacity = response.buffer.capacity();
 
                         // The current protocol and two previous generations all send at least 28 bytes
@@ -502,6 +502,7 @@ public class FastLeaderElection implements Election {
             public void run() {
                 while (!stop) {
                     try {
+                        //从发送消息队列拉取消息
                         ToSend m = sendqueue.poll(3000, TimeUnit.MILLISECONDS);
                         if (m == null) {
                             continue;
@@ -927,7 +928,7 @@ public class FastLeaderElection implements Election {
      * Starts a new round of leader election. Whenever our QuorumPeer
      * changes its state to LOOKING, this method is invoked, and it
      * sends notifications to all other peers.
-     * 发送选举通知给所有的节点
+     * 开启新的一轮leader选举。当QuorumPeer改变他的状态为looking时，此方法将会触发并发送通知到其它的Peer
      */
     public Vote lookForLeader() throws InterruptedException {
         try {
@@ -1090,6 +1091,7 @@ public class FastLeaderElection implements Election {
                             if (n == null) {
                                 setPeerState(proposedLeader, voteSet);
                                 Vote endVote = new Vote(proposedLeader, proposedZxid, logicalclock.get(), proposedEpoch);
+                                //leader选举结束
                                 leaveInstance(endVote);
                                 return endVote;
                             }

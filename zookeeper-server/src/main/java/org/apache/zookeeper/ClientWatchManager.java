@@ -21,10 +21,12 @@ package org.apache.zookeeper;
 import java.util.Set;
 
 /**
+ * 接口：返回监听的集合
  */
 public interface ClientWatchManager {
 
     /**
+     * 返回事件应该被通知的监听集合
      * Return a set of watchers that should be notified of the event. The
      * manager must not notify the watcher(s), however it will update it's
      * internal structure as if the watches had triggered. The intent being

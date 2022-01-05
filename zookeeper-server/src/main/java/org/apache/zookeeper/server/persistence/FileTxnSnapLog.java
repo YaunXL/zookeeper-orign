@@ -54,9 +54,11 @@ public class FileTxnSnapLog {
 
     //the directory containing the
     //the transaction logs
+    //已提交的事务日志目录
     final File dataDir;
     //the directory containing the
     //the snapshot directory
+    //快照日志文件
     final File snapDir;
     TxnLog txnLog;
     SnapShot snapLog;

@@ -106,10 +106,13 @@ public class Observer extends Learner {
         boolean completedSync = false;
         try {
             self.setZabState(QuorumPeer.ZabState.DISCOVERY);
+            //获取leader server
             QuorumServer master = findLearnerMaster();
             try {
+                //与leader建立连接，尝试5次
                 connectToLeader(master.addr, master.hostname);
                 connectTime = System.currentTimeMillis();
+                //一旦与leader建立连接，则执行握手协议
                 long newLeaderZxid = registerWithLeader(Leader.OBSERVERINFO);
                 if (self.isReconfigStateChange()) {
                     throw new Exception("learned about role change");
@@ -118,6 +121,7 @@ public class Observer extends Learner {
                 final long startTime = Time.currentElapsedTime();
                 self.setLeaderAddressAndId(master.addr, master.getId());
                 self.setZabState(QuorumPeer.ZabState.SYNCHRONIZATION);
+                //同步leader历史日志，保持一致
                 syncWithLeader(newLeaderZxid);
                 self.setZabState(QuorumPeer.ZabState.BROADCAST);
                 completedSync = true;
@@ -126,6 +130,7 @@ public class Observer extends Learner {
                 QuorumPacket qp = new QuorumPacket();
                 while (this.isRunning() && nextLearnerMaster.get() == null) {
                     readPacket(qp);
+                    //处理请求包
                     processPacket(qp);
                 }
             } catch (Exception e) {
@@ -194,12 +199,15 @@ public class Observer extends Learner {
             LOG.error("Received an UPTODATE message after Observer started");
             break;
         case Leader.REVALIDATE:
+            //校验会话
             revalidate(qp);
             break;
         case Leader.SYNC:
+            //处理同步请求
             ((ObserverZooKeeperServer) zk).sync();
             break;
         case Leader.INFORM:
+            //提交提议通知
             ServerMetrics.getMetrics().LEARNER_COMMIT_RECEIVED_COUNT.add(1);
             logEntry = SerializeUtils.deserializeTxn(qp.getData());
             hdr = logEntry.getHeader();
@@ -212,6 +220,7 @@ public class Observer extends Learner {
             obs.commitRequest(request);
             break;
         case Leader.INFORMANDACTIVATE:
+            //重新配置通知
             // get new designated leader from (current) leader's message
             ByteBuffer buffer = ByteBuffer.wrap(qp.getData());
             long suggestedLeaderId = buffer.getLong();

@@ -38,6 +38,7 @@ public class WatchedEvent {
 
     /**
      * Create a WatchedEvent with specified type, state and path
+     * 对某个路径节点创建一个监听，初始化事件类型和连接状态
      */
     public WatchedEvent(EventType eventType, KeeperState keeperState, String path) {
         this.keeperState = keeperState;

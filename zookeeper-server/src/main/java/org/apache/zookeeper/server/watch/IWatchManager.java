@@ -26,7 +26,7 @@ public interface IWatchManager {
 
     /**
      * Add watch to specific path.
-     *
+     * 增加watch
      * @param path znode path
      * @param watcher watcher object reference
      *
@@ -36,11 +36,11 @@ public interface IWatchManager {
 
     /**
      * Add watch to specific path.
-     *
+     * 添加watcher,watch的模式：watchMode-是否持久化；是否递归
      * @param path znode path
      * @param watcher watcher object reference
      * @param watcherMode the watcher mode to use
-     *
+     * 仅支持标准模式
      * @return true if the watcher added is not already present
      */
     default boolean addWatch(String path, Watcher watcher, WatcherMode watcherMode) {
@@ -52,7 +52,7 @@ public interface IWatchManager {
 
     /**
      * Checks the specified watcher exists for the given path.
-     *
+     * 检查节点是否存在watcher
      * @param path znode path
      * @param watcher watcher object reference
      *
@@ -62,7 +62,7 @@ public interface IWatchManager {
 
     /**
      * Removes the specified watcher for the given path.
-     *
+     * 删除节点watcher
      * @param path znode path
      * @param watcher watcher object reference
      *
@@ -72,7 +72,7 @@ public interface IWatchManager {
 
     /**
      * The entry to remove the watcher when the cnxn is closed.
-     *
+     * 连接关闭是移除watcher
      * @param watcher watcher object reference
      */
     void removeWatcher(Watcher watcher);

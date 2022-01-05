@@ -85,6 +85,7 @@ import org.slf4j.LoggerFactory;
  * the entire process and thus the connection to ZK and the leader offer
  * resulting in another round of leader determination.</li>
  * </ul>
+ * 实现watcher监听
  */
 public class LeaderElectionSupport implements Watcher {
 
@@ -340,6 +341,10 @@ public class LeaderElectionSupport implements Watcher {
         }
     }
 
+    /**
+     * 分发事件，向客户端分发选举事件
+     * @param eventType
+     */
     private void dispatchEvent(EventType eventType) {
         LOG.debug("Dispatching event: {}", eventType);
 
