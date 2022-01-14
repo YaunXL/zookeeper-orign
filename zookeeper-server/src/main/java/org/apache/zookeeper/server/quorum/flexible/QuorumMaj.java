@@ -32,16 +32,21 @@ import org.slf4j.LoggerFactory;
 /**
  * This class implements a validator for majority quorums. The implementation is
  * straightforward.
- *
+ * 集群校验实现类
  */
 public class QuorumMaj implements QuorumVerifier {
 
     private static final Logger LOG = LoggerFactory.getLogger(QuorumMaj.class);
 
+    //集群所有的server
     private Map<Long, QuorumServer> allMembers = new HashMap<Long, QuorumServer>();
+    //集群参与投票的sever
     private Map<Long, QuorumServer> votingMembers = new HashMap<Long, QuorumServer>();
+    //observer的server
     private Map<Long, QuorumServer> observingMembers = new HashMap<Long, QuorumServer>();
     private long version = 0;
+
+    //过半投票数
     protected int half;
 
     public int hashCode() {
@@ -85,6 +90,11 @@ public class QuorumMaj implements QuorumVerifier {
         half = votingMembers.size() / 2;
     }
 
+    /**
+     * 初始化从配置文件获取数据
+     * @param props
+     * @throws ConfigException
+     */
     public QuorumMaj(Properties props) throws ConfigException {
         for (Entry<Object, Object> entry : props.entrySet()) {
             String key = entry.getKey().toString();
@@ -136,6 +146,7 @@ public class QuorumMaj implements QuorumVerifier {
     /**
      * Verifies if a set is a majority. Assumes that ackSet contains acks only
      * from votingMembers
+     * 校验投票回复数是否过半
      */
     public boolean containsQuorum(Set<Long> ackSet) {
         return (ackSet.size() > half);

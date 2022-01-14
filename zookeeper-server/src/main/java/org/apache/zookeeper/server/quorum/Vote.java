@@ -67,14 +67,25 @@ public class Vote {
         this.version = 0x0;
     }
 
-    private final int version;
 
+    private final int version;
+    /**
+     * 选票推举的leader的sid（配置文件myid）
+     */
     private final long id;
 
+    /**
+     * 被推举的leader的事务id
+     */
     private final long zxid;
-
+    /**
+     * 逻辑时钟，每次选举的轮次
+     */
     private final long electionEpoch;
 
+    /**
+     * 被推举的leader的逻辑epoch
+     */
     private final long peerEpoch;
 
     public int getVersion() {

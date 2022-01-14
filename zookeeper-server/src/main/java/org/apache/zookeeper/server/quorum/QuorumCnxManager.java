@@ -139,6 +139,7 @@ public class QuorumCnxManager {
 
     /*
      * Connection time out value in milliseconds
+     * 连接超时时间5s
      */
 
     private int cnxTO = 5000;
@@ -209,6 +210,9 @@ public class QuorumCnxManager {
     }
 
 
+    /**
+     * 集群之间相互传输的数据结构封装
+     */
     public static class Message {
 
         Message(ByteBuffer buffer, long sid) {
@@ -926,6 +930,7 @@ public class QuorumCnxManager {
 
     /**
      * Thread to listen on some ports
+     * 监听选举端口线程
      */
     public class Listener extends ZooKeeperThread {
 
@@ -1179,6 +1184,7 @@ public class QuorumCnxManager {
      * Thread to send messages. Instance waits on a queue, and send a message as
      * soon as there is one available. If connection breaks, then opens a new
      * one.
+     * 发送线程
      */
     class SendWorker extends ZooKeeperThread {
 
@@ -1267,6 +1273,7 @@ public class QuorumCnxManager {
 
         @Override
         public void run() {
+            //记录当前工作线程数
             threadCnt.incrementAndGet();
             try {
                 /**
@@ -1281,6 +1288,7 @@ public class QuorumCnxManager {
                  * If the send queue is non-empty, then we have a recent
                  * message than that stored in lastMessage. To avoid sending
                  * stale message, we should send the message in the send queue.
+                 * 获取当前主机的发送缓冲队列
                  */
                 BlockingQueue<ByteBuffer> bq = queueSendMap.get(sid);
                 if (bq == null || isSendQueueEmpty(bq)) {
@@ -1324,6 +1332,7 @@ public class QuorumCnxManager {
                     QuorumCnxManager.this.mySid,
                     e);
             }
+            //结束发送
             this.finish();
 
             LOG.warn("Send worker leaving thread id {} my id = {}", sid, self.getId());
@@ -1361,6 +1370,7 @@ public class QuorumCnxManager {
     /**
      * Thread to receive messages. Instance waits on a socket read. If the
      * channel breaks, then removes itself from the pool of receivers.
+     * 接收消息线程
      */
     class RecvWorker extends ZooKeeperThread {
 

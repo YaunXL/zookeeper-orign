@@ -524,6 +524,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
      * 服务的状态
      */
     public enum ServerState {
+        //选举状态
         LOOKING,
         FOLLOWING,
         LEADING,
